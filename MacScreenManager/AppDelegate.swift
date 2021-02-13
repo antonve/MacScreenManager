@@ -61,6 +61,8 @@ private extension AppDelegate {
 
     @objc
     func layoutScreens() {
+        screenCount = 2
+
         let task = Process()
         let pipe = Pipe()
 
