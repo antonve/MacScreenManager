@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -52,35 +53,35 @@ private extension AppDelegate {
             let menu = NSMenu()
             menu.addItem(NSMenuItem(title: "Anton's Screen Manager", action: nil, keyEquivalent: ""))
             menu.addItem(NSMenuItem.separator())
+            menu.addItem(NSMenuItem(title: "Fix Screen Layout", action: #selector(layoutScreens), keyEquivalent: "l"))
             menu.addItem(NSMenuItem(title: "Quit", action: #selector(handleQuit), keyEquivalent: "q"))
             return menu
         }()
     }
 
+    @objc
     func layoutScreens() {
-        shell("maxscreen")
-    }
-
-    @discardableResult
-    private func shell(_ command: String) -> Int32 {
         let task = Process()
         let pipe = Pipe()
 
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["zsh", "-c", command]
+        task.arguments = ["zsh", "-c", "maxscreen"]
         task.launchPath = "/usr/bin/env"
+
+        // Setup env because it doesn't reuse the one from zsh properly...
         var env = ProcessInfo.processInfo.environment
-        env["PATH"] = "\(env["PATH"]):/Users/\(ProcessInfo.processInfo.fullUserName)/dotfiles/bin:/usr/local/bin/"
+        env["PATH"] = "\(env["PATH"] ?? ""):/Users/\(ProcessInfo.processInfo.fullUserName)/dotfiles/bin:/usr/local/bin/"
         task.environment = env
+
+        os_log("Layout screen user: %s", log: OSLog.default, type: .info, ProcessInfo.processInfo.fullUserName)
         task.launch()
         task.waitUntilExit()
 
-//        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-//        let output = String(data: data, encoding: .utf8)!
-//        print(output)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output = String(data: data, encoding: .utf8)!
 
-        return task.terminationStatus
+        os_log("Layout screen output: %s", log: OSLog.default, type: .info, output)
+        os_log("Layout screen termination status: %s %s", log: OSLog.default, type: .info, task.terminationStatus.description, "\(task.terminationReason.rawValue)")
     }
-
 }
