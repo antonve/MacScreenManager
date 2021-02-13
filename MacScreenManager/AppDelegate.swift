@@ -76,14 +76,14 @@ private extension AppDelegate {
         env["PATH"] = "\(env["PATH"] ?? ""):/Users/\(ProcessInfo.processInfo.fullUserName)/dotfiles/bin:/usr/local/bin/"
         task.environment = env
 
-        os_log("Layout screen user: %s", log: OSLog.default, type: .info, ProcessInfo.processInfo.fullUserName)
+        os_log("Layout screen $PATH: %{public}s", log: OSLog.default, type: .info, "\(env["PATH"] ?? "")")
         task.launch()
         task.waitUntilExit()
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8)!
 
-        os_log("Layout screen output: %s", log: OSLog.default, type: .info, output)
-        os_log("Layout screen termination status: %s %s", log: OSLog.default, type: .info, task.terminationStatus.description, "\(task.terminationReason.rawValue)")
+        os_log("Layout screen output: %{public}s", log: OSLog.default, type: .info, output)
+        os_log("Layout screen termination status: %{public}s %{public}s", log: OSLog.default, type: .info, task.terminationStatus.description, "\(task.terminationReason.rawValue)")
     }
 }
